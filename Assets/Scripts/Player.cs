@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,20 @@ public class Player : MonoBehaviour
     [SerializeField] GameInput gameInput;
     private Vector3 lastInteractDir;
 
+    private void Start()
+    {
+        gameInput.OnInteractAction += GameInput_OnInteractAction;
+    }
+
+    private void GameInput_OnInteractAction(object sender, EventArgs e)
+    {
+        HandleInteractions();
+    }
+
     private void Update()
     {
         HandleMovement();
-        HandleInteractions();
+        // HandleInteractions();
     }
 
     void HandleInteractions()
