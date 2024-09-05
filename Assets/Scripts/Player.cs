@@ -5,12 +5,33 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public static Player Instance { get; private set; }
+
+    public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
+    public class OnSelectedCounterChangedEventArgs : EventArgs
+    {
+        public ClearCounter _selectedCounter;
+    }
+
+    [Header("Player Attributes")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotateSpeed = 10f;
+
+    [Header("Counters")]
     [SerializeField] private LayerMask countersLayerMask;
     private bool isWalking;
     [SerializeField] GameInput gameInput;
     private Vector3 lastInteractDir;
+    private ClearCounter selectedCounter;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogError("There is more than one player");
+        }
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -19,13 +40,16 @@ public class Player : MonoBehaviour
 
     private void GameInput_OnInteractAction(object sender, EventArgs e)
     {
-        HandleInteractions();
+        if (selectedCounter != null)
+        {
+            selectedCounter.Interact();
+        }
     }
 
     private void Update()
     {
         HandleMovement();
-        // HandleInteractions();
+        HandleInteractions();
     }
 
     void HandleInteractions()
@@ -43,11 +67,20 @@ public class Player : MonoBehaviour
         {
             if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
             {
-                // Has clear counter
-                clearCounter.Interact();
+                if (clearCounter != selectedCounter)
+                {
+                    SetSelectedCounter(clearCounter);
+                }
+            }
+            else
+            {
+                SetSelectedCounter(null);
             }
         }
-
+        else
+        {
+            SetSelectedCounter(null);
+        }
     }
 
     void HandleMovement()
@@ -104,5 +137,15 @@ public class Player : MonoBehaviour
     public bool IsWalking()
     {
         return isWalking;
+    }
+
+    private void SetSelectedCounter(ClearCounter selectedCounter)
+    {
+        this.selectedCounter = selectedCounter;
+
+        OnSelectedCounterChanged?.Invoke(this, new OnSelectedCounterChangedEventArgs
+        {
+            _selectedCounter = this.selectedCounter,
+        });
     }
 }
