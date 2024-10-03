@@ -88,6 +88,6 @@ public class GameManager : MonoBehaviour
 
     public float GetGamePlayingTimerNormalize()
     {
-        return (gamePlayingTimer / gamePlayingTimerMax);
+        return gamePlayingTimer / gamePlayingTimerMax;
     }
 }
